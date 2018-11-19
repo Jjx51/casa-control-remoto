@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Casa Control Remoto</string>
+    <string name="B">B</string>
+    <string name="Enviar">Enviar</string>
+    <string name="estado_de_puerta">Estado de puerta</string>
+    <string name="cerrada">Cerrada</string>
+    <string name="desconectar">Desconectar</string>
+    <string name="abrir_puerta">Abrir puerta</string>
+    <string name="reiniciar">Reiniciar</string>
+    <string name="estado_de_ventana">Estado de ventana</string>
+</resources>

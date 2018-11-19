@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1020156636548",
+    "firebase_url": "https://casitacontrolremoto.firebaseio.com",
+    "project_id": "casitacontrolremoto",
+    "storage_bucket": "casitacontrolremoto.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020156636548:android:895c6cd3dee6ac8f",
+        "android_client_info": {
+          "package_name": "com.nubesolucionesdigitales.casitacontrolremoto"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1020156636548-lrt3nfeicnprml9nfmfm5efjt117u51j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nubesolucionesdigitales.casitacontrolremoto",
+            "certificate_hash": "84ceca819db6efab1f107220e44de84dec212ab2"
+          }
+        },
+        {
+          "client_id": "1020156636548-0r8lbkal8p3nth2vub0uea8s6eh4i95l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxd5LscVTVmpN0_m_zaJb4ikist6vcTX0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1020156636548-0r8lbkal8p3nth2vub0uea8s6eh4i95l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
