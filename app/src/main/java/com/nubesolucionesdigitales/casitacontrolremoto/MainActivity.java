@@ -6,14 +6,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -36,11 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button buttonWc;
     Button buttonCuartoLavado;
     Button buttonDesconectar;
-    Button buttonAbrirPuerta;
     Button buttonReiniciar;
 
-    TextView textViewEstadoPuerta;
-    TextView textViewEstadoVentana;
     /**/
     boolean habitacionUnoPrendido=false;
     boolean habitacionDosPrendido=false;
@@ -50,9 +44,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean cocinaPrendido=false;
     boolean wcPrendido=false;
     boolean cuartoLavadoPrendido=false;
-
-    boolean puertaAbierta =false;
-    boolean ventanaAbierta=false;
 
     /*CODIGO PARA CONTROLAR BLUETOOTH*/
     String address = null;
@@ -72,15 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DatabaseReference databaseReferenceEntrada=firebaseDatabase.getReference("entrada");
     DatabaseReference databaseReferenceJardin=firebaseDatabase.getReference("jardin");
     DatabaseReference databaseReferenceSala=firebaseDatabase.getReference("sala");
-    DatabaseReference databaseReferencePuerta =firebaseDatabase.getReference("puerta");
     DatabaseReference databaseReferenceWc=firebaseDatabase.getReference("wc");
-    DatabaseReference databaseReferenceVentana=firebaseDatabase.getReference("ventana");
-
-    /**/
-    EditText editTextRed;
-    EditText editTextGreen;
-    EditText editTextBlue;
-    Button buttonRgb;
 
     /**/
     String bluetoothSala="A";
@@ -91,11 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String bluetoothJardin="H";
     String bluetoothHabitacionDos="E";
     String bluetoothHabitacionUno="D";
-    String bluetoothPuerta="I";
-    String bluetoothRGB="B";
     String bluetoothReiniciar="X";
-    /*Se manda esta variable para verificar el estado de la ventana*/
-    String bluetoothChecarEstadoVentana="W";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent newint = getIntent();
         address = newint.getStringExtra(DeviceListActivity.EXTRA_ADDRESS); //receive the address of the bluetooth device
         new ConnectBT().execute(); //Call the class to connect
-        recibirVariableBluetooth();
     }
 
     private void establecerClickListener() {
@@ -123,10 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonWc.setOnClickListener(this);
 
         buttonDesconectar.setOnClickListener(this);
-        buttonAbrirPuerta.setOnClickListener(this);
         buttonReiniciar.setOnClickListener(this);
 
-        buttonRgb.setOnClickListener(this);
     }
 
     private void obtenerVariables() {
@@ -141,17 +117,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         buttonDesconectar=findViewById(R.id.buttonDesconectar);
 
-        textViewEstadoPuerta =findViewById(R.id.textViewEstadoPuerta);
-        buttonAbrirPuerta =findViewById(R.id.buttonAbrirPuerta);
-
         buttonReiniciar=findViewById(R.id.buttonReiniciar);
 
-        editTextRed=findViewById(R.id.editTextRed);
-        editTextGreen=findViewById(R.id.editTextGreen);
-        editTextBlue=findViewById(R.id.editTextBlue);
-        buttonRgb=findViewById(R.id.buttonEnviarRgb);
-
-        textViewEstadoVentana=findViewById(R.id.textViewEstadoVentana);
     }
 
     @Override
@@ -185,18 +152,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.buttonDesconectar:
                 desconectar();
                 break;
-            case R.id.buttonAbrirPuerta:
-                abrirPuerta();
-                break;
             case R.id.buttonReiniciar:
                 reiniciar();
-                break;
-            case R.id.buttonEnviarRgb:
-                mandarRgb();
                 break;
 
         }
     }
+
+    /*Aqui se reinicia todo
+    * todos los booleanos regresan a false
+    * En la base de datos todo regresa a 0
+    * Se colocan todas las imagenes de los cuartos oscuras
+    * Se manda el string "X" al bluetooth para que sepa que debe de apagar todo*/
 
     private void reiniciar() {
         /**/
@@ -208,8 +175,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cocinaPrendido=false;
         wcPrendido=false;
         cuartoLavadoPrendido=false;
-        puertaAbierta =false;
-        ventanaAbierta=false;
 
         /**/
         databaseReferenceSala.setValue(0);
@@ -220,8 +185,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseReferenceJardin.setValue(0);
         databaseReferenceHabitacion1.setValue(0);
         databaseReferenceHabitacion2.setValue(0);
-        databaseReferencePuerta.setValue(0);
-        databaseReferenceVentana.setValue(0);
 
         /**/
         buttonSala.setBackground(getDrawable(R.drawable.salaoscuro));
@@ -233,17 +196,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonHabitacionUno.setBackground(getDrawable(R.drawable.habitacion1oscuro));
         buttonHabitacionDos.setBackground(getDrawable(R.drawable.habitacion2oscuro));
 
-        textViewEstadoPuerta.setText("Cerrada");
-        buttonAbrirPuerta.setText("Abrir Puerta");
-        textViewEstadoVentana.setText("Cerrada");
-
-
         mandarVariableBluetooth(bluetoothReiniciar);
 
         Toast.makeText(this, "Se han reiniciado las variables", Toast.LENGTH_SHORT).show();
 
     }
 
+    /*Metodos correspondientes para apagar o prender la luz de un cuarto*/
     private void iluminarSala() {
         if (salaPrendido){
             /*Se apaga*/
@@ -374,89 +333,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void abrirPuerta(){
-        if (puertaAbierta){
-            /*Se cierra*/
-            puertaAbierta =false;
-            textViewEstadoPuerta.setText("Cerrada");
-            buttonAbrirPuerta.setText("Abrir puerta");
-            databaseReferencePuerta.setValue(0);
-            mandarVariableBluetooth(bluetoothPuerta);
-        }else {
-            puertaAbierta = true;
-            textViewEstadoPuerta.setText("Abierta");
-            buttonAbrirPuerta.setText("Cerrar puerta");
-            databaseReferencePuerta.setValue(1);
-            mandarVariableBluetooth(bluetoothPuerta);
-        }
 
-    }
-
-    private void mandarRgb() {
-        Boolean valoresCorrectos=false;
-        final String red;
-        final String green;
-        final String blue;
-
-        /*Se recuepran las variables de los edittext*/
-        red=editTextRed.getText().toString();
-        green=editTextGreen.getText().toString();
-        blue=editTextBlue.getText().toString();
-
-        /*Se pasan las variables a int para comprobar que estan dentro del rango de 0 a 255*/
-        int redInt;
-        int greenInt;
-        int blueInt;
-
-        if (!red.equals("") && !green.equals("") && !blue.equals("")){
-            redInt=Integer.parseInt(red);
-            greenInt=Integer.parseInt(green);
-            blueInt=Integer.parseInt(blue);
-
-            if (redInt>=0 &&redInt<=255){
-                if (greenInt>=0 &&greenInt<=255){
-                    if (blueInt>=0 &&blueInt<=255){
-                        valoresCorrectos=true;
-                    }
-                }
-            }
-
-        }
-
-
-        if (valoresCorrectos) {
-            /*Mandar Bluetooth*/
-            mandarVariableBluetooth(bluetoothRGB);
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mandarVariableBluetooth(red);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mandarVariableBluetooth(green);
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mandarVariableBluetooth(blue);
-                                }
-                            },500);
-                        }
-                    },500);
-                }
-            },500);
-
-
-
-            Toast.makeText(this, "RGB mandado", Toast.LENGTH_SHORT).show();
-        }else{
-            Toast.makeText(this, "Los valores del RGB no son correctos", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    /*CODIGO PARA CONTROLAR BLUETOOTH*/
+    /*codigo para desconectar el bluetooth*/
     private void desconectar() {
         if (btSocket!=null){ //If the btSocket is busy
             try {
@@ -469,8 +347,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    /*Ejemplos para mandar variables por medio del blueetooh
-    * Aqui se debe de acomodar para cada metodo*/
+    /* Metodo simplificado para mandar un String al bluetooth*/
 
     private void mandarVariableBluetooth(String variable){
         if (btSocket!=null)
@@ -486,71 +363,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void recibirVariableBluetooth(){
-
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (btSocket!=null)
-                {
-                    try
-                    {
-                        String variableRecibida="";
-                        btSocket.getInputStream().read(variableRecibida.getBytes());
-
-                        if (variableRecibida.equals("0")){
-                            textViewEstadoVentana.setText("Cerrada");
-                            databaseReferenceVentana.setValue(0);
-                        }else if (variableRecibida.equals("1")){
-                            textViewEstadoVentana.setText("Abierta");
-                            databaseReferenceVentana.setValue(1);
-                        }else{
-                            Toast.makeText(getBaseContext(), "Error recibiendo variable", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        Toast.makeText(getBaseContext(), "Error", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-
-        // Start the thread
-        t.start();
-    }
-
-    private void turnOffLed()
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                btSocket.getOutputStream().write("0".toString().getBytes());
-            }
-            catch (IOException e)
-            {
-                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void turnOnLed()
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                btSocket.getOutputStream().write("1".toString().getBytes());
-            }
-            catch (IOException e)
-            {
-                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    /*CONECTAR EL BLUETOOTH*/
+    /*CONECTAR EL BLUETOOTH
+    * Aqui se hacen las conexiones correspondientes para vincular la aplicacion movil con el bluetooth*/
 
     private class ConnectBT extends AsyncTask<Void, Void, Void>  // UI thread
     {
@@ -601,7 +415,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /*Lee una unica vez al entrar en la actividad para cargar los estados iniciales de las variables desde Firebase*/
+    /*Este codigo se ejecuta una sola vez al iniciar la actividad esto con el fin de pdoer recuperar las variables del
+    * servidor FIrebase*/
 
     private void cargarEstadosFirebase() {
         databaseReferenceCocina.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -728,36 +543,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        databaseReferencePuerta.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue(Integer.class)==1){
-                    puertaAbierta =true;
-                    textViewEstadoPuerta.setText("Abierta");
-                    buttonAbrirPuerta.setText("Cerrar puerta");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        databaseReferenceVentana.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue(Integer.class)==1){
-                    ventanaAbierta=true;
-                    textViewEstadoVentana.setText("Abierta");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
 }
